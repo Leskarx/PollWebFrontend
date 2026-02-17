@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Vote, AlertCircle } from 'lucide-react';
@@ -6,7 +5,7 @@ import { fetchPoll } from '../services/api.fetchPoll';
 import { submitVote } from '../services/api.vote';
 import { io } from 'socket.io-client';
 import PollSkeleton from './PollSkeleton';
-import Toast from './Toast';
+import Toast from "./Toast";
 
 export default function PollVoting() {
   const { pollId } = useParams();
@@ -94,14 +93,50 @@ export default function PollVoting() {
       setToast({ type: 'success', message: 'Vote submitted!' });
 
     } catch (err) {
-      setToast({
-        type: 'error',
-        message: err.response?.data?.message || 'Vote failed',
-      });
+      // Check if the error is "Already voted"
+      const errorMessage = err.response?.data?.message || err.message || 'Vote failed';
+      
+      if (errorMessage.toLowerCase().includes('already voted')) {
+        // User has already voted - disable UI and show results
+        localStorage.setItem(`poll_${pollId}_voted`, 'true');
+        setHasVoted(true);
+        
+        // Refresh poll data to get latest results
+        await loadPoll();
+        
+        setToast({ 
+          type: 'info', 
+          message: 'You have already voted. Showing results.' 
+        });
+      } else {
+        // Other error
+        setToast({
+          type: 'error',
+          message: errorMessage,
+        });
+      }
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Check if user has already voted on component mount
+  useEffect(() => {
+    const checkVoteStatus = async () => {
+      try {
+        // Optional: You could add an API endpoint to check vote status
+        // For now, we'll rely on localStorage and error handling
+        const voted = localStorage.getItem(`poll_${pollId}_voted`);
+        if (voted) {
+          setHasVoted(true);
+        }
+      } catch (err) {
+        console.error('Error checking vote status:', err);
+      }
+    };
+
+    checkVoteStatus();
+  }, [pollId]);
 
   // CALCULATE TOTAL VOTES
   const totalVotes =
@@ -130,6 +165,13 @@ export default function PollVoting() {
             {poll.question}
           </h1>
 
+          {/* Show vote count summary when user has voted */}
+          {hasVoted && (
+            <div className="mb-4 text-sm text-slate-400">
+              Total votes: {totalVotes}
+            </div>
+          )}
+
           <div className="space-y-3 mb-8">
             {poll.options.map((option) => {
               const isSelected = selected === option._id;
@@ -146,7 +188,7 @@ export default function PollVoting() {
                     isSelected
                       ? 'border-indigo-500 bg-indigo-600/20'
                       : 'border-slate-700 bg-slate-800'
-                  } ${hasVoted ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  } ${hasVoted ? 'opacity-70 cursor-not-allowed' : 'hover:border-indigo-500/50'}`}
                 >
                   <div className="flex justify-between items-center">
                     <span className="text-lg text-white">
@@ -154,18 +196,20 @@ export default function PollVoting() {
                     </span>
 
                     {hasVoted && (
-                      <span className="text-slate-400 text-sm">
-                        {percent}% ({option.voteCount})
+                      <span className="text-slate-400 text-sm font-medium">
+                        {percent}% ({option.voteCount} {option.voteCount === 1 ? 'vote' : 'votes'})
                       </span>
                     )}
                   </div>
 
                   {hasVoted && (
-                    <div className="mt-3 h-2 bg-slate-700 rounded">
-                      <div
-                        className="h-2 bg-indigo-500 rounded transition-all duration-500"
-                        style={{ width: `${percent}%` }}
-                      />
+                    <div className="mt-3">
+                      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
                     </div>
                   )}
                 </button>
@@ -173,11 +217,11 @@ export default function PollVoting() {
             })}
           </div>
 
-          {!hasVoted && (
+          {!hasVoted ? (
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full rounded-lg bg-indigo-600 px-6 py-4 text-lg font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+              className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 text-lg font-semibold text-white hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 transition-all"
             >
               {submitting ? (
                 <span className="inline-flex items-center gap-2">
@@ -206,19 +250,25 @@ export default function PollVoting() {
               ) : (
                 <span className="inline-flex items-center justify-center gap-2">
                   <Vote className="h-5 w-5" />
-                  Vote
+                  Submit Vote
                 </span>
               )}
             </button>
+          ) : (
+            <div className="text-center text-slate-400 text-sm border-t border-slate-700 pt-4 mt-2">
+              <p>Results are shown above.</p>
+            </div>
           )}
         </div>
       </div>
 
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast 
+          type={toast.type} 
+          message={toast.message} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </div>
   );
 }
-
-
-
-
