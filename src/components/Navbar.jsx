@@ -12,10 +12,10 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-xl font-bold tracking-tight text-white transition-colors hover:text-indigo-400"
+            className="flex items-center gap-2 text-base md:text-xl font-bold tracking-tight text-white transition-colors hover:text-indigo-400"
           >
             <BarChart3 className="h-6 w-6 text-indigo-400" />
-            <span className="bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r hidden md:block from-white to-indigo-200 bg-clip-text text-transparent">
               Real-Time Poll Rooms
             </span>
           </button>
@@ -23,9 +23,9 @@ export default function Navbar() {
           {!isHome && (
             <button
               onClick={() => navigate('/')}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/25"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-2 py-1 md:px-4 md:py-2 text-sm font-normal md:font-medium text-white transition-all hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/25"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="hidden md:block  h-4 w-4" />
               Create Your Own Poll
             </button>
           )}
