@@ -98,7 +98,7 @@ export default function CreatePoll() {
                 />
                 <button
                   onClick={copyLink}
-                  className="inline-flex items-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-600/10 px-4 py-3 text-sm font-medium text-indigo-300"
+                  className="inline-flex items-center gap-1 rounded-lg border border-indigo-500/30 bg-indigo-600/10 px-1 py-2  md:px-4 md:py-3 text-sm font-medium text-indigo-300"
                 >
                   <Copy className="h-4 w-4" />
                   Copy

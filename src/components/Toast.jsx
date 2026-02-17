@@ -13,7 +13,7 @@ export default function Toast({ type, message, onClose }) {
   const icons = {
     success: CheckCircle,
     error: XCircle,
-    info: Info  // Add info icon
+    info: Info 
   };
 
   const styles = {
@@ -24,7 +24,6 @@ export default function Toast({ type, message, onClose }) {
 
   const Icon = icons[type];
 
-  // Don't render if no message or icon is undefined
   if (!message || !Icon) return null;
 
   return (

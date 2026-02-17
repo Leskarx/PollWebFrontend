@@ -56,7 +56,6 @@ export default function PollVoting() {
     return () => socket.disconnect();
   }, [pollId]);
 
-  // SELECT OPTION
   const handleSelect = (optionId) => {
     if (hasVoted) return;
     setSelected(optionId);
@@ -93,15 +92,12 @@ export default function PollVoting() {
       setToast({ type: 'success', message: 'Vote submitted!' });
 
     } catch (err) {
-      // Check if the error is "Already voted"
       const errorMessage = err.response?.data?.message || err.message || 'Vote failed';
       
       if (errorMessage.toLowerCase().includes('already voted')) {
-        // User has already voted - disable UI and show results
         localStorage.setItem(`poll_${pollId}_voted`, 'true');
         setHasVoted(true);
         
-        // Refresh poll data to get latest results
         await loadPoll();
         
         setToast({ 
@@ -120,12 +116,10 @@ export default function PollVoting() {
     }
   };
 
-  // Check if user has already voted on component mount
   useEffect(() => {
     const checkVoteStatus = async () => {
       try {
-        // Optional: You could add an API endpoint to check vote status
-        // For now, we'll rely on localStorage and error handling
+       
         const voted = localStorage.getItem(`poll_${pollId}_voted`);
         if (voted) {
           setHasVoted(true);
